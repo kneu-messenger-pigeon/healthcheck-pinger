@@ -1,0 +1,14 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main']
+
+jobs:
+  release:
+    permissions:
+      contents: read
+      packages: write
+    uses: kneu-messenger-pigeon/github-workflows/.github/workflows/release.yaml@main
+    secrets: inherit

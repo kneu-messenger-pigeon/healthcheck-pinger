@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  alpine-unhealthy:
+    image: alpine
+    command: sleep 120
+    restart: always
+    stop_signal: SIGKILL
+    healthcheck:
+      test: ["CMD", "exit", "1"]
+      interval: 1s
+      timeout: 1s
+      retries: 1
+      start_period: 0s
+
+
+  alpine-exited:
+    image: alpine
+    stop_signal: SIGKILL
+
