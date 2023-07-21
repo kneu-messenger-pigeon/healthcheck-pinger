@@ -14,7 +14,7 @@ docker run --rm \
 ### Docker compose example
 ```yaml
 services:
-  healthcheck-ping:
+  healthcheck-pinger:
     image: ghcr.io/kneu-messenger-pigeon/healthcheck-pinger:main
     restart: always
     volumes:
