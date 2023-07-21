@@ -1,4 +1,4 @@
-ARG GO_VERSION=${GO_VERSION:-1.19}
+ARG GO_VERSION=${GO_VERSION:-1.20}
 
 FROM --platform=${BUILDPLATFORM:-linux/amd64}  golang:${GO_VERSION}-alpine AS builder
 
