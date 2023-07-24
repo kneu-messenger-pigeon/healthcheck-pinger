@@ -12,3 +12,5 @@ jobs:
       packages: write
     uses: kneu-messenger-pigeon/github-workflows/.github/workflows/release.yaml@main
     secrets: inherit
+    with:
+      docker-root-user: true
