@@ -25,7 +25,7 @@ func main() {
 	fmt.Fprintln(os.Stdout, "COMPOSE_PROJECT_NAME: "+composeProjectName)
 
 	timeInterval, _ := strconv.Atoi(os.Getenv("INTERVAL"))
-	if timeInterval == 0 {
+	if timeInterval <= 0 {
 		timeInterval = 60
 	}
 	ticker := time.NewTicker(time.Duration(timeInterval) * time.Second)
@@ -37,6 +37,8 @@ func main() {
 
 	ignoreServices := parseIgnoreServices(os.Getenv("IGNORE_SERVICES"))
 	fmt.Fprintln(os.Stdout, "IGNORE_SERVICES: "+strings.Join(ignoreServices, ", "))
+
+	errorThreshold, _ := strconv.Atoi(os.Getenv("ERROR_THRESHOLD"))
 
 	httpClient := &http.Client{
 		Timeout: time.Second * 5,
@@ -63,7 +65,7 @@ func main() {
 	unhealthyServices := make([]string, 0)
 
 	var errorString string
-
+	errorCount := 0
 	for {
 		containers, err = cli.ContainerList(ctx, options)
 
@@ -88,11 +90,14 @@ func main() {
 		}
 
 		if err == nil && len(runningServices) > 0 && len(unhealthyServices) == 0 && len(exitedServices) == 0 {
+			errorCount = 0
 			_, err = httpClient.Post(
 				healthCheckSuccessPingUrl, contentType,
 				strings.NewReader(strings.Join(runningServices, "\n")),
 			)
 		} else {
+			errorCount++
+
 			errorString = fmt.Sprintf("%v", err) + "\n" +
 				strings.Join(exitedServices, "\n") + "\n" +
 				strings.Join(unhealthyServices, "\n")
@@ -102,10 +107,12 @@ func main() {
 				"\n",
 			)
 
-			_, err = httpClient.Post(
-				healthCheckErrorPingUrl, contentType,
-				strings.NewReader(errorString),
-			)
+			if errorCount >= errorThreshold {
+				_, err = httpClient.Post(
+					healthCheckErrorPingUrl, contentType,
+					strings.NewReader(errorString),
+				)
+			}
 		}
 
 		if err != nil {
